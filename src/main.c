@@ -9,6 +9,9 @@
 #define SCREEN_W (ROAD_LEN * CELL_W)
 #define SCREEN_H 600 // number of history rows shown
 
+int g_curr_road[ROAD_LEN];
+int g_next_road[ROAD_LEN];
+
 int main(void)
 {
     InitWindow(SCREEN_W, SCREEN_H, "Nagel-Schreckenberg Traffic");
