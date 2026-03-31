@@ -6,7 +6,7 @@
 
 #define ROAD_LEN 300
 #define MAX_VELOCITY 5
-#define N_CARS 100
+#define N_CARS 300
 #define DAWDLE_PROB 0.3f
 
 #define CELL_W 3
@@ -131,11 +131,30 @@ int main(void)
 
     init_road();
 
+    int history[SCREEN_H][ROAD_LEN];
+    memset(history, -1, sizeof(history));
+    int head = 0;
+
     while (!WindowShouldClose())
     {
-        BeginDrawing();
+        step();
 
+        memcpy(history[head], g_curr_road, sizeof(g_curr_road));
+        head = (head + 1) % SCREEN_H;
+
+        BeginDrawing();
         ClearBackground(BG_COLOR);
+
+        for (int row = 0; row < SCREEN_H; row++)
+        {
+            // row 0 should be the oldest entry
+            int buf_row = (head + row) % SCREEN_H;
+            for (int col = 0; col < ROAD_LEN; col++)
+            {
+                Color c = velocity_color(history[buf_row][col]);
+                DrawRectangle(col * CELL_W, row, CELL_W, 1, c);
+            }
+        }
 
         EndDrawing();
     }
