@@ -1,9 +1,12 @@
 #include <raylib.h>
 #include <stddef.h>
+#include <time.h>
+#include <string.h>
+#include <assert.h>
 
 #define ROAD_LEN 300
 #define MAX_VELOCITY 5
-#define N_CARS 100
+#define N_CARS 400
 #define DAWDLE_PROB 0.3f
 
 #define CELL_W 3
@@ -63,10 +66,36 @@ Color velocity_color(int velocity)
     }
 }
 
+// Place N_CARS cars at random positions with random initial velocities
+// Make sure no two cars occupy the same cell
+void init_road(void)
+{
+    assert(N_CARS <= ROAD_LEN);
+
+    memset(g_curr_road, -1, sizeof(g_curr_road));
+
+    size_t placed = 0;
+
+    while (placed < N_CARS)
+    {
+        size_t pos = GetRandomValue(0, ROAD_LEN - 1);
+
+        if (g_curr_road[pos] == -1)
+        {
+            g_curr_road[pos] = GetRandomValue(0, MAX_VELOCITY);
+            placed++;
+        }
+    }
+}
+
 int main(void)
 {
+    SetRandomSeed(time(NULL));
+
     InitWindow(SCREEN_W, SCREEN_H, "Nagel-Schreckenberg Traffic");
     SetTargetFPS(GetMonitorRefreshRate(GetCurrentMonitor()));
+
+    init_road();
 
     while (!WindowShouldClose())
     {
