@@ -6,7 +6,7 @@
 
 #define ROAD_LEN 300
 #define MAX_VELOCITY 5
-#define N_CARS 400
+#define N_CARS 100
 #define DAWDLE_PROB 0.3f
 
 #define CELL_W 3
@@ -64,6 +64,40 @@ Color velocity_color(int velocity)
         float local_t = (t - 0.5f) * 2.0f;
         return ColorLerp(YELLOW, GREEN, local_t);
     }
+}
+
+// Applies NS rules to `road`, writes result into `next_road`
+void step(void)
+{
+    memset(g_next_road, -1, sizeof(g_next_road));
+
+    for (size_t pos = 0; pos < ROAD_LEN; pos++)
+    {
+        int velocity = g_curr_road[pos];
+
+        if (velocity == -1)
+            continue;
+
+        // 1. Acceleration
+        if (velocity < MAX_VELOCITY)
+            velocity++;
+
+        // 2. Slowing down
+        size_t gap = gap_ahead(pos);
+        if ((size_t)velocity > gap)
+            velocity = (int)gap;
+
+        // 3. Dawdling
+        if (velocity > 0 && GetRandomValue(0, 1000) < (int)(DAWDLE_PROB * 1000))
+            velocity--;
+
+        // 4. Movement
+        size_t new_pos = (pos + velocity) % ROAD_LEN;
+
+        g_next_road[new_pos] = velocity;
+    }
+
+    memcpy(g_curr_road, g_next_road, sizeof(g_curr_road));
 }
 
 // Place N_CARS cars at random positions with random initial velocities
